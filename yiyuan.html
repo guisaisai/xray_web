@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <title>北京医保不用定点也能报销的医院</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <style>
+        body, html, #container {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            font-family: "微软雅黑";
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://api.map.baidu.com/api?type=webgl&v=1.0&ak=2rEL6AkVcqdni5mobE8j8YLVuBjHNsFA"></script>
+</head>
+<body>
+    <div id="container">
+    </div>
+    <div style="z-index: 999;position: absolute;top: 10px;">&nbsp;<button onclick="render1()">19家A类定点医院</button>&nbsp;&nbsp;<button onclick="render2()">专科和中医医院</button>&nbsp;&nbsp;<button onclick="renderAll()">所有</button>&nbsp;</div>
+</body>
+</html>
+<script>
+    var map = new BMapGL.Map("container");    // 创建Map实例
+    map.centerAndZoom(new BMapGL.Point(116.404, 39.915), 12);  // 初始化地图,设置中心点坐标和地图级别
+    map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+    var scaleCtrl = new BMapGL.ScaleControl();  // 添加比例尺控件
+    map.addControl(scaleCtrl);
+    var zoomCtrl = new BMapGL.ZoomControl();  // 添加比例尺控件
+    map.addControl(zoomCtrl);
+
+    /*// 创建定位控件
+    var locationControl = new BMapGL.LocationControl({
+        // 控件的停靠位置（可选，默认左上角）
+        anchor: BMAP_ANCHOR_TOP_RIGHT,
+        // 控件基于停靠位置的偏移量（可选）
+        offset: new BMapGL.Size(20, 20)
+    });
+    // 将控件添加到地图上
+    map.addControl(locationControl);
+    // 添加定位事件
+    locationControl.addEventListener("locationSuccess", function(e){
+        var address = '';
+        address += e.addressComponent.province;
+        address += e.addressComponent.city;
+        address += e.addressComponent.district;
+        address += e.addressComponent.street;
+        address += e.addressComponent.streetNumber;
+        alert("当前定位地址为：" + address);
+    });
+    locationControl.addEventListener("locationError",function(e){
+        alert(e.message);
+    });*/
+
+    function go(url){
+        var system ={};
+        var p = navigator.platform;
+        system.win = p.indexOf("Win") == 0;
+        system.mac = p.indexOf("Mac") == 0;
+        system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+        if(system.win||system.mac||system.xll){//如果是电脑跳转到
+            window.open(url);
+        }else{  //如果是手机,跳转到
+            window.location.href=url;
+        }
+    }
+
+    function setPlace(searchText){
+        function myFun(){
+            var poi = local.getResults().getPoi(0);
+            var _point = poi.point;    //获取第一个智能搜索的结果
+            var _marker = new BMapGL.Marker(_point)
+            map.addOverlay(_marker);    //添加标注
+            _marker.addEventListener('click', function () {
+                map.openInfoWindow(new BMapGL.InfoWindow(
+                    searchText
+                    +"<br/>"+"地址:"+poi.address
+                    +"<br/>"+(poi.phoneNumber||'')
+                    +"<br/><button  onclick='go(\"http:"+poi.detailUrl+"\")'>详细地址</button>"
+                    , {
+                        width: 200,
+                        height: 150,
+                        title: poi.title
+                    }), _point);
+            });
+        }
+        var local = new BMapGL.LocalSearch(map, { //智能搜索
+            onSearchComplete: myFun
+        });
+        local.search(searchText);
+    }
+
+    function searchList(list){
+        map.clearOverlays();
+        for(var i in list){
+            setPlace(list[i]);
+        }
+    }
+
+    function render1(){
+        searchList([
+            "中国医学科学院北京协和医院","首都医科大学附属北京同仁医院","首都医科大学宣武医院","首都医科大学附属北京友谊医院","北京大学第一医院","北京大学人民医院","北京大学第三医院","北京积水潭医院","中国中医科学院广安门医院","首都医科大学附属北京朝阳医院","中日友好医院","北京大学首钢医院","首都医科大学附属北京中医医院","首都医科大学附属北京天坛医院","北京世纪坛医院(北京铁路总医院)","北京市健宫医院","北京市房山区良乡医院","北京市大兴区人民医院","北京市石景山医院",
+        ]);
+    }
+    function render2(){
+        searchList([
+            "北京中医药大学东直门医院","首都医科大学附属北京中医医院","首都医科大学中医药学院附属鼓楼中医医院","中国中医研究院骨伤科医院","中国中医研究院针灸研究所门诊部","北京天安中医院","首都医科大学中医药学院东城中医门诊部","北京市东城区中医药学会东单中医门诊部","首都医科大学附属北京妇产医院","北京市东城区妇幼保健院","北京市东城区精神卫生保健院","北京地坛医院","北京市东城区口腔医院","北京市东城区急救站","北京地坛口腔门诊部","北京市丰盛中医骨伤专科医院(北京市西城区丰盛医院)",
+            "北京中医药大学附属护国寺中医医院","中国中医研究院广安门医院西单门诊部","首都医科大学附属北京安定医院","北京市结核病控制研究所","中国医学科学院阜外心血管病医院(中国协和医科大学阜外心血管病医院)","北京急救中心","北京市西城区结核病防治所","中国残疾人联合会北京按摩医院","北京市西城区妇幼保健所","首都医科大学附属北京口腔医院西城诊所","北京大学口腔医院门诊部","北京市崇文区中医医院",
+            "北京国医药研究院崇文天易中医门诊部","首都医科大学附属北京口腔医院","北京市崇文区精神病防治院","北京市崇文区结核病防治所","北京市崇文区妇幼保健院","北京市崇文区口腔医院","北京市崇文区急救站","中国中医研究院广安门医院",
+            "北京市宣武中医医院","北京市宣武区妇幼保健院","北京市宣武区精神病医院","北京市宣武区结核病防治所","北京市宣武区老年病医院","首都医科大学宣武医院广安门口腔门诊部","北京宣武流动医院","北京市宣武区急救站","中国中医研究院西苑医院",
+            "北京市中西医结合医院","北京顺天德中医医院","北京市海淀区中医医院","北京肿瘤医院","北京大学口腔医院","北京大学第六医院(精神病专科)","北京市海淀区妇幼保健院","北京市道培医院","北京因苏林糖尿病医院","北京市海淀区结核病防治所","北京东平口腔门诊部","中国中医研究院望京医院",
+            //朝阳
+            "中国藏学研究中心北京藏医院","北京市朝阳区中医医院","北京广慈中医药研究院广济中医医院","北京市朝阳区安苑中医医院","中国医学科学院肿瘤医院肿瘤研究所","北京市老年病医院","北京市红十字会急诊抢救中心","北京市朝阳区妇幼保健院","北京南洋肿瘤医院","北京三环肿瘤医院","北京英智眼科医院","北京市朝阳区结核病防治所","北京市朝阳区皮肤性病防治所","北京市朝阳区急救站","首都医科大学朝阳东区口腔门诊部",
+            //通州
+            //"北京市通州区中医医院","北京胸部肿瘤结核病医院","北京市通州区老年病医院","北京市通州区妇幼保健院","北京市通州区结核病防治所","通州区精神病医院",
+            //石景山
+            "中国中医研究院眼科医院","北京市石景山区中医医院(石景山区八角街道社区卫生服务中心)","北京市石景山区妇幼保健院","北京市石景山区精神卫生保健所","北京市石景山区结核病防治所","北京市石景山区疾病预防控制中心门诊部","北京市石景山区急救站",
+            //丰台
+            "北京中医药大学东方医院","北京市丰台区兴隆中医医院","首都医科大学附属北京佑安医院(传染病专科)","中国人民解放军第三0二医院(传染病专科)","北京市丰台区精神病防治院","北京市丰台区结核病防治所","北京城建第二医院(烧伤、肛肠病专科)","北京医学之星高科技创业有限公司丰台医星医院(骨科、心内科)",
+            //昌平
+            "北京市昌平区中医医院","北京回龙观医院(精神病专科)","北京市昌平区妇幼保健院","北京市昌平区精神卫生保健院","北京民康医院(精神病、老年病专科)","北京和义哮喘病医院","北京骨髓炎医院","北京皇城股骨头坏死专科医院","北京市昌平区结核病防治所",
+            //大兴
+            "北京市大兴区中医医院","北京市大兴区妇幼保健院","北京市大兴区精神病医院","北京市大兴区结核病预防控制中心","北京市延庆县中医医院","延庆县中医门诊部","延庆县妇幼保健院","延庆县结核病防治所","延庆县精神卫生保健院",
+            //房山
+            //"北京市房山区中医医院","北京市安康医院(精神病专科)","北京市房山区妇幼保健医院","北京市房山区燕山妇幼保健院","北京市房山区精神卫生保健院","北京市房山区结核病防治所","北京市房山区老年病医院",
+            //密云
+            //"北京市密云县中医院","密云县妇幼保健院","北京市密云县结核病防治所","北京市密云县精神卫生保健院","北京市怀柔区中医医院","北京市怀柔区妇幼保健院","北京市怀柔安佳医院(北京铁路分局怀柔北铁路医院)(精神病专科)",
+            //门头沟
+            //"北京市门头沟区中医医院","北京市门头沟区中医骨伤科医院","北京市门头沟区妇幼保健院","北京市门头沟区龙泉医院(精神病专科)","北京市门头沟区结核病防治所","北京市门头沟区疾病预防控制中心门诊部",
+            //平谷
+            //"北京市平谷区中医医院","北京市平谷区妇幼保健院","北京市平谷区精神病医院","北京市平谷区结核病医院",
+            //顺义
+            //"北京市顺义区中医院","北京市潮白河骨伤科医院","北京市顺义区妇幼保健院","北京中奥癫痫脑病医院","北京市顺义区副食品公司医院(脑血管病专科)","北京市顺义区精神病疗养院","北京市顺义区结核病防治所","北京市顺义区传染病医院"
+
+        ]);
+    }
+    function renderAll(){
+        render1();
+        render2();
+    }
+</script>
